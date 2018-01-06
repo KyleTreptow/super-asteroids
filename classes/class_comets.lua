@@ -13,12 +13,12 @@ function comet:new()
 
 	if math.random(2) > 1 then
 
-		self.x = winWidth/2 - self.dx/math.abs(self.dx) * winWidth/2
-		self.y = math.random(0, winHeight)
+		self.x = winWidth/2 - self.dx/math.abs(self.dx) * mapWidth/2
+		self.y = math.random(0, mapHeight)
 	else
 
-		self.x = math.random(0, winWidth)
-		self.y = winHeight/2 - self.dy/math.abs(self.dy) * winHeight/2
+		self.x = math.random(0, mapWidth)
+		self.y = mapHeight/2 - self.dy/math.abs(self.dy) * mapHeight/2
 	end
 end
 
@@ -27,8 +27,8 @@ function comet:update(dt)
 	self.x = self.x + self.dx * dt * 0x40
 	self.y = self.y + self.dy * dt * 0x40
 
-	if self.x < - winWidth	or self.x > winWidth * 2
-	or self.y < - winWidth	or self.y > winHeight * 2 then
+	if self.x < - mapWidth	or self.x > mapWidth * 2
+	or self.y < - mapWidth	or self.y > mapHeight * 2 then
 
 		self.e = nil
 	end

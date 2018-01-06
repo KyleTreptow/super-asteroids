@@ -33,16 +33,18 @@ function t:update(dt, objects)
     objects.hero.body:setAngularVelocity(-2)
   elseif love.keyboard.isDown("w") then
     objects.hero.body:applyForce(vx, vy)
+  elseif love.keyboard.isDown("s") then
+    objects.hero.body:applyForce(-vx, -vy)
   end
   -- hero:teleportingEdges
-  if objects.hero.body:getX() > winWidth then
+  if objects.hero.body:getX() > mapWidth then
     objects.hero.body:setPosition(0, objects.hero.body:getY())
   elseif objects.hero.body:getX() < 0 then
-    objects.hero.body:setPosition(winWidth, objects.hero.body:getY())
-  elseif objects.hero.body:getY() > winHeight then
+    objects.hero.body:setPosition(mapWidth, objects.hero.body:getY())
+  elseif objects.hero.body:getY() > mapHeight then
     objects.hero.body:setPosition(objects.hero.body:getX(), 0)
   elseif objects.hero.body:getY() < 0 then
-    objects.hero.body:setPosition(objects.hero.body:getX(), winHeight)
+    objects.hero.body:setPosition(objects.hero.body:getX(), mapHeight)
   end
 end
 

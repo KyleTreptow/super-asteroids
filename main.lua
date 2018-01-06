@@ -1,6 +1,8 @@
 -- global vars
 winWidth = 1200
 winHeight = 675
+mapWidth = winWidth * 10
+mapHeight = winHeight * 10
 -- utilities
 lume = require("utilities/lume") -- global
 local lurker = require("utilities/lurker")
@@ -10,6 +12,7 @@ local Bullet = require("classes/class_bullet")
 local Hero = require("classes/class_hero")
 local Stars = require("classes/class_stars")
 local Comets = require("classes/class_comets")
+require("classes/class_camera")
 -- local vars
 local globaldt = 0;
 local cometSpawnInterval = 1 + lume.random(0, 3)
@@ -43,6 +46,8 @@ end
 function boosterFlame(ship)
 
 end
+
+
 -- -- -- -- -- -- -- -- -- -- -- --
 -- Contact Handlers
 -- -- -- -- -- -- -- -- -- -- -- --
@@ -67,14 +72,28 @@ function preSolve(a, b, coll)
     a:getBody():getUserData().isOverlapping = true
     b:getBody():getUserData().isOverlapping = true
   end
+  if a:getCategory() == 3 and b:getCategory() == 4 then
+    coll:setEnabled(false)
+  end
+  if a:getCategory() == 4 and b:getCategory() == 4 then
+    coll:setEnabled(false)
+  end
 end
 
 function postSolve(a, b, coll, normalimpulse, tangentimpulse)
   -- postSolve (resolves categories in order)
   if a:getCategory() == 2 and b:getCategory() == 4 then
+    destroyBullet(b)
     -- a:destroy()
-    b:destroy()
   end
+end
+-- -- -- -- -- -- -- -- -- -- -- --
+-- Bounding Box Checks
+-- -- -- -- -- -- -- -- -- -- -- --
+function destroyBullet(obj)
+  obj:destroy()
+  local t = obj:getUserData()
+  t = nil
 end
 -- -- -- -- -- -- -- -- -- -- -- --
 -- Bounding Box Checks
@@ -87,6 +106,48 @@ end
 -- Load
 -- -- -- -- -- -- -- -- -- -- -- --
 function love.load()
+  --
+  -- width = love.graphics.getWidth()
+  -- height = love.graphics.getHeight()
+  camera:setBounds(0, 0, mapWidth - winWidth, mapHeight - winHeight)
+
+  -- level box
+  levelBox = {
+    x = 0,
+    y = 0,
+    width = mapWidth,
+    height = mapHeight,
+    color = { 255, 0, 0 }
+  }
+  -- layers!
+  camera.layers = {}
+
+  for i = .5, 3, .5 do
+    local rectangles = {}
+
+    for j = 1, math.random(2, 15) do
+      table.insert(rectangles, {
+        math.random(0, 1600),
+        math.random(0, 1600),
+        math.random(50, 400),
+        math.random(50, 400),
+        color = { math.random(0, 255), math.random(0, 255), math.random(0, 255) }
+      })
+    end
+
+    camera:newLayer(i, function()
+      for _, v in ipairs(rectangles) do
+        love.graphics.setColor(v.color)
+        love.graphics.rectangle('fill', unpack(v))
+        love.graphics.setColor(255, 255, 255)
+      end
+    end
+  )
+  end
+
+  --
+
+  --
   love.physics.setMeter(64)
   world = love.physics.newWorld(0, 0, true)
   world:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -132,6 +193,9 @@ function love.update(dt)
   -- bullets:update & kill
   Bullet:update(dt, objects)
 
+  --
+  camera:setPosition(objects.hero.body:getX() - winWidth / 2, objects.hero.body:getY() - winHeight / 2)
+
 end
 -- -- -- -- -- -- -- -- -- -- -- --
 -- Glow Shape
@@ -158,6 +222,12 @@ end
 -- Draw
 -- -- -- -- -- -- -- -- -- -- -- --
 function love.draw()
+
+
+  camera:set()
+  -- levelBox
+  love.graphics.setColor(levelBox.color)
+  love.graphics.rectangle('line', levelBox.x, levelBox.y, levelBox.width, levelBox.height)
   -- background:draw
   Stars:draw()
   if Comets.e then
@@ -213,10 +283,16 @@ function love.draw()
   love.graphics.setColor(200,200,200)
   local major, minor, revision, codename = love.getVersion()
   local str = string.format("Version %d.%d.%d - %s", major, minor, revision, codename)
-  love.graphics.print(str, 20, 20)
-  love.graphics.print('Super Asteroids - Dev Build v0.1', 20, 40)
+  love.graphics.print(str, 20 + camera._x, 20 + camera._y)
+  love.graphics.print('Super Asteroids - Dev Build v0.1 ('.. love.timer.getFPS() ..')', 20 + camera._x, 40 + camera._y)
   local dimW, dimH = love.graphics:getDimensions()
-  love.graphics.print('Window: ' .. dimW .. ' x ' .. dimH, 20, winHeight-50)
-  love.graphics.print('Asteroid #: ' .. #objects.asteroids, 20, winHeight-30)
-  love.graphics.print('Bullets #: ' .. #objects.bullets, winWidth/2, winHeight-30)
+  love.graphics.print('Window: ' .. dimW .. ' x ' .. dimH, 20+ camera._x, winHeight-50 + camera._y)
+  love.graphics.print('Asteroid #: ' .. #objects.asteroids, 20+ camera._x, winHeight-30 + camera._y)
+  love.graphics.print('Bullets #: ' .. #objects.bullets, winWidth/2+ camera._x, winHeight-30 + camera._y)
+
+  -- unset cam
+  camera:unset()
+
+  -- camera:drawBackground()
+
 end

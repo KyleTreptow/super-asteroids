@@ -1,10 +1,24 @@
 local stars = {}
 
-for i = 1, 0x400 do
+function stars:new()
+    local star_obj = {}
+    for i = 1, 0x800 do
+        star_obj[i] = {}
+        star_obj[i].x, star_obj[i].y, star_obj[i].n =
+						math.random(0, mapWidth),
+						math.random(0, mapHeight),
+            math.random(0, 0xff)
+        end
+    setmetatable(star_obj, self)
+    self.__index = self
+    return star_obj
+end
+
+for i = 1, 0x3333 do
 	stars[i] = {}
 	stars[i].x, stars[i].y, stars[i].n =
-		math.random(0, winWidth),
-		math.random(0, winHeight),
+		math.random(0, mapWidth),
+		math.random(0, mapHeight),
 		math.random(0, 0xff)
 end
 
